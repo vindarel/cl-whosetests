@@ -8,6 +8,7 @@
            :watched?
            :*watchlist*
            :get-all-connected
+           :mfind
            :main
            ))
 (in-package :clwhosconnected)
@@ -161,6 +162,25 @@
   "Add items listed in `*data-file*' into the `*watchlist*'."
   (setf *watchlist* (append (build-data-watchlist) *watchlist*)))
 
+(defparameter *data-directory* nil
+  "The directory containing our files.")
+
+(defun mfind (str)
+  "Find for files matching `.*str.*` (inside the data repository)."
+  ;; xxx recursively
+  (format t "*data-directory*: ~a~&" *data-directory*)
+  (remove-if-not (lambda (it)
+                   (str:contains? str (namestring it)))
+                 (osicat:list-directory *data-directory*)))
+
+(defun view (str)
+  (let* ((res (mfind str))
+         (res (map ^(namestring (truename %)) res)))
+    (uiop:run-program (list "mpv" (first res)))))
+
+;;
+;; REPL
+;;
 ;; path relative to this package. Can and should change for proper use.
 (defparameter *init* (asdf:system-relative-pathname :clwhosconnected "init.lisp")
   "Path to the init file.")
@@ -179,6 +199,8 @@
                            ("get" . "get information about one endpoint")
                            ("version" . "print current version")
                            ("open" . "open argument in browser")
+                           ("mfind" . "find files matching ARG with wildcards.")
+                           ("view" . "open the matching files with mpv")
                            )
   )
 
@@ -265,6 +287,12 @@
 
           ((string= "list" verb)
            (format t "~a~&" (watchlist-names)))
+
+          ((string= "mfind" verb)
+           (format t "~a~&" (mfind (first args))))
+
+          ((string= "view" verb)
+           (view (first args)))
 
           ((string= "open" verb)
            (uiop:run-program (list "firefox" (name2url (first args))))))

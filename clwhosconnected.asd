@@ -20,6 +20,7 @@
                :str
                :cl-annot
                :cl-readline
+               :osicat
                :unix-opts
                :cl-ansi-text)
   :components ((:module "src"
