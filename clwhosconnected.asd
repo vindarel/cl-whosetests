@@ -8,7 +8,7 @@
 (in-package :clwhosconnected-asd)
 
 (defsystem clwhosconnected
-  :version "0.1"
+  :version (:read-file-form "version.lisp-expr")
   :author ""
   :license ""
   :depends-on (:cl21
