@@ -4,7 +4,8 @@
 
 (in-package :cl-user)
 (defpackage clwhosconnected-test-asd
-  (:use :cl :asdf))
+  (:use :cl21
+        :asdf))
 (in-package :clwhosconnected-test-asd)
 
 (defsystem clwhosconnected-test
