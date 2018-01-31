@@ -40,7 +40,7 @@
 
 (defparameter *watchlist* '() "list of people to watch. Add in init.el.")
 
-(defparameter *data-file* "data.txt"
+(defparameter *data-file* (asdf:system-relative-pathname :clwhosconnected  "data.txt")
   "the file name in which are stored lines of things to watch.")
 
 (defparameter *stats* #H())
