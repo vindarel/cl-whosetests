@@ -54,7 +54,8 @@
 
 (defun watchlist-names (&optional (watchlist *watchlist*))
   "List items can be a string or a cons cell with an alist of properties."
-  (map ^(if (consp %) (car %) %) watchlist))
+  (sort (map ^(if (consp %) (car %) %) watchlist)
+        #'string<=))
 
 (defun names ()
   (format t "~a~&" (watchlist-names)))
