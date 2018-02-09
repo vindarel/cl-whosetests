@@ -20,6 +20,7 @@
                :str
                :cl-annot
                :cl-readline
+               :replic
                :osicat
                :unix-opts
                :cl-ansi-text)

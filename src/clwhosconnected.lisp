@@ -1,6 +1,7 @@
 (in-package :cl21-user)
 (defpackage clwhosconnected
   (:use :cl21)
+  (:shadow :open)
   (:import-from :alexandria
                 :if-let)
   (:export :print-name
@@ -8,15 +9,17 @@
            :watched?
            :*watchlist*
            :get-all-connected
+           :names
            :mfind
+           :open
+           :version
+           :view
            :main
            ))
 (in-package :clwhosconnected)
 (annot:enable-annot-syntax)
 
-;; blah blah blah.
-
-(defconstant +version+ 0.2)
+(defconstant +version+ 0.3)
 
 (defparameter *user-agent* "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3 Safari/600.3.18")
 
@@ -53,6 +56,8 @@
   "List items can be a string or a cons cell with an alist of properties."
   (map ^(if (consp %) (car %) %) watchlist))
 
+(defun names ()
+  (format t "~a~&" (watchlist-names)))
 
 (defun titles2url (titles)
   "From a list of user names, give back the full url."
@@ -169,9 +174,15 @@
   "Find for files matching `.*str.*` (inside the data repository)."
   ;; xxx recursively
   (format t "*data-directory*: ~a~&" *data-directory*)
-  (remove-if-not (lambda (it)
-                   (str:contains? str (namestring it)))
-                 (osicat:list-directory *data-directory*)))
+  (let ((res (remove-if-not (lambda (it)
+                              (str:contains? str (namestring it)))
+                            (osicat:list-directory *data-directory*))))
+    (format t "~a~&" res)
+    res))
+
+(defun open (name)
+  "Open name with web browser. Complete with the connected names, not all."
+  (uiop:run-program (list "firefox" (name2url name))))
 
 (defun view (str)
   (let* ((res (mfind str))
@@ -193,14 +204,16 @@
    "
   (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print)))
 
+;TODO: this is a list for custom complete. We might use replic's completion system.
 (defparameter *commands* '(
                            ("search" . "search all")
                            ("list" . "list candidates")
-                           ("get" . "get information about one endpoint")
+                           ("get-all-connected" . "search all")
                            ("version" . "print current version")
                            ("open" . "open argument in browser")
                            ("mfind" . "find files matching ARG with wildcards.")
                            ("view" . "open the matching files with mpv")
+                           ("names" . "show all names")
                            )
   )
 
@@ -259,53 +272,9 @@
   (map ^(format t "~10a-~t ~a~&" (car %) (cdr %))
        *commands*))
 
-(defun repl ()
-  (rl:register-function :complete #'custom-complete)
+(defun version ()
+  (format t "~a~&" +version+))
 
-  (handler-case
-      (do ((i 0 (1+ i))
-           (text "")
-           (verb "")
-           (args ""))
-          ((string= "quit" (str:trim text)))
-        (setf text
-              (rl:readline :prompt (cl-ansi-text:green (format nil "whosconnected [~a] > " i))
-                           :add-history t))
-        (setf verb (first (str:words text)))
-        (setf args (rest (str:words text)))
-
-        (cond
-          ((string= "version" verb)
-           (format t "~a~&" +version+))
-
-          ((or (string= "help" verb)
-               (string= "?" verb))
-           (repl-help))
-
-          ((string= "search" verb)
-           (format t "~a~&" (get-all-connected)))
-
-          ((string= "list" verb)
-           (format t "~a~&" (watchlist-names)))
-
-          ((string= "mfind" verb)
-           (format t "~a~&" (mfind (first args))))
-
-          ((string= "view" verb)
-           (view (first args)))
-
-          ((string= "open" verb)
-           (uiop:run-program (list "firefox" (name2url (first args))))))
-
-        (finish-output)
-
-        )
-
-    (#+sbcl sb-sys:interactive-interrupt
-      () (progn
-           (uiop:quit)))
-    (error (c)
-      (format t "Unknown error: ~&~a~&" c))))
 
 ;; command-line.
 
@@ -329,7 +298,19 @@
         (opts:get-opts))
 
     (if (getf options :interactive)
-        (repl)
-        (format t "~a~&" (get-all-connected)))
+        (progn
 
-    ))
+          ;; Build our repl commands, help and repl goodies with replic.
+
+          (setf replic:*prompt* (cl-ansi-text:green "whosconnected > "))
+
+          ;; Create the completions bindings.
+          (replic:init-completions)
+
+          ;; create commands from the exported functions and variables.
+          ;; xxx our custom-complete below overrides those commands.
+          (replic:functions-to-commands :clwhosconnected)
+
+          ;; use our completion function: always complete names after the verb.
+          (replic:repl :custom-complete #'custom-complete))
+        (format t "~a~&" (get-all-connected)))))

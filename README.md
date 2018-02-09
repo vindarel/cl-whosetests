@@ -1,6 +1,23 @@
 whosconnected
 
-Personal tries for an interactive prompt. Content transfered to:
+Personal tries for an interactive prompt.
+
+We use [replic](https://github.com/vindarel/replic) to ease the building of the readline repl.
+
+```common-lisp
+(setf replic:*prompt* (cl-ansi-text:green "whosconnected > "))
+
+;; Create the completions bindings.
+(replic:init-completions)
+
+;; create commands from the exported functions and variables.
+(replic:functions-to-commands :clwhosconnected)
+
+;; run the repl
+(replic:repl))
+```
+
+Lessons learned transfered to:
 
 * https://lispcookbook.github.io/cl-cookbook/web-scraping.html
 * https://lispcookbook.github.io/cl-cookbook/scripting.html
@@ -9,7 +26,7 @@ Personal tries for an interactive prompt. Content transfered to:
 
 We use [cl21](https://lispcookbook.github.io/cl-cookbook/cl21.html).
 
-Quick lambdas:
+Specially cool for quick lambdas:
 
 ~~~lisp
 (defun titles2url (titles)
@@ -18,5 +35,3 @@ Quick lambdas:
 ~~~
 
 and [str](https://github.com/vindarel/cl-str).
-
-
