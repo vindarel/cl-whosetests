@@ -1,7 +1,6 @@
 (in-package :cl21-user)
 (defpackage clwhosconnected
   (:use :cl21)
-  (:shadow :open)
   (:import-from :alexandria
                 :if-let)
   (:export :print-name
@@ -11,7 +10,7 @@
            :get-all-connected
            :names
            :mfind
-           :open
+           :browse
            :version
            :view
            :main
@@ -26,7 +25,7 @@
 (defparameter *base-url* ""
   "Valid base url.")
 
-(defvar *page-suffix* "" "what to add to the main url to browse pages.")
+(defvar *page-suffix* "" "what to add to the main url to open pages.")
 (setq *page-suffix* "?page=")
 
 (defun get-pages (&optional (base-url *base-url*) (suffix *page-suffix*))
@@ -181,7 +180,7 @@
     (format t "~a~&" res)
     res))
 
-(defun open (name)
+(defun browse (name)
   "Open name with web browser. Complete with the connected names, not all."
   (uiop:run-program (list "firefox" (name2url name))))
 
@@ -211,7 +210,7 @@
                            ("list" . "list candidates")
                            ("get-all-connected" . "search all")
                            ("version" . "print current version")
-                           ("open" . "open argument in browser")
+                           ("browse" . "open argument in browser")
                            ("mfind" . "find files matching ARG with wildcards.")
                            ("view" . "open the matching files with mpv")
                            ("names" . "show all names")
@@ -262,7 +261,7 @@
   "
   (declare (ignore end))
   (let ((list-names))
-    (setf list-names (if (string= "open" (first (str:words rl:*line-buffer*)))
+    (setf list-names (if (string= "browse" (first (str:words rl:*line-buffer*)))
                          *all-connected*
                          (watchlist-names)))
     (if (zerop start)
