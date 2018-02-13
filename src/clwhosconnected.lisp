@@ -204,73 +204,6 @@
    "
   (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print)))
 
-;TODO: this is a list for custom complete. We might use replic's completion system.
-(defparameter *commands* '(
-                           ("search" . "search all")
-                           ("list" . "list candidates")
-                           ("get-all-connected" . "search all")
-                           ("version" . "print current version")
-                           ("browse" . "open argument in browser")
-                           ("mfind" . "find files matching ARG with wildcards.")
-                           ("view" . "open the matching files with mpv")
-                           ("names" . "show all names")
-                           )
-  )
-
-(defparameter *verbs* (map #'first *commands*)
-  "verbs of the prompt. Symbols.")
-
-(defun common-prefix (items)
-  ;; tmp waiting for cl-str 0.5 in Quicklisp february.
-  "Find the common prefix between strings.
-
-   Uses the built-in `mismatch', that returns the position at which
-   the strings fail to match.
-
-   Example: `(str:common-prefix '(\"foobar\" \"foozz\"))` => \"foo\"
-
-   - items: list of strings
-   - Return: a string.
-
-  "
-  ;; thanks koji-kojiro/cl-repl
-  (when items (subseq
-               (car items)
-               0
-               (apply
-                #'min
-                (map
-                 ^(or (mismatch (car items) %) (length %))
-                 (cdr items))))))
-
-(defun select-completions (text list)
-  "Select all verbs from `list' that start with `text'."
-  (let ((els (remove-if-not (alexandria:curry #'str:starts-with? text)
-                            list)))
-    (if (cdr els)
-        (cons (common-prefix els) els)
-        els)))
-
-(defun custom-complete (text start end)
-  "Complete a symbol.
-
-  text is the partially entered word. start and end are the position on `rl:*line-buffer*'.
-
-  When the cursor is at the beginning of the prompt, complete commands.
-  Otherwise, complete names.
-  "
-  (declare (ignore end))
-  (let ((list-names))
-    (setf list-names (if (string= "browse" (first (str:words rl:*line-buffer*)))
-                         *all-connected*
-                         (watchlist-names)))
-    (if (zerop start)
-        (select-completions text *verbs*)
-        (select-completions text list-names))))
-
-(defun repl-help ()
-  (map ^(format t "~10a-~t ~a~&" (car %) (cdr %))
-       *commands*))
 
 (defun version ()
   (format t "~a~&" +version+))
@@ -308,9 +241,15 @@
           (replic:init-completions)
 
           ;; create commands from the exported functions and variables.
-          ;; xxx our custom-complete below overrides those commands.
+          (replic:functions-to-commands :replic)
           (replic:functions-to-commands :clwhosconnected)
 
-          ;; use our completion function: always complete names after the verb.
-          (replic:repl :custom-complete #'custom-complete))
+          ;; define completions.
+          (push '("browse" . *all-connected*) replic:*args-completions*)
+
+          ;; complete all other commands with a name.
+          (setf replic:*default-command-completion* #'watchlist-names)
+
+          ;; start the repl.
+          (replic:repl))
         (format t "~a~&" (get-all-connected)))))
