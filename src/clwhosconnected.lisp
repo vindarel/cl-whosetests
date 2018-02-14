@@ -241,7 +241,7 @@
           (replic:init-completions)
 
           ;; create commands from the exported functions and variables.
-          (replic:functions-to-commands :replic)
+          (replic:functions-to-commands :replic.base)
           (replic:functions-to-commands :clwhosconnected)
 
           ;; define completions.
