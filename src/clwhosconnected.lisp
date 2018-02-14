@@ -104,6 +104,7 @@
       (format stream "~a~%" str-or-cons)))
 
 (defun print-connected (names)
+  "Print who's connected (who was found with the last `get-all-connected`."
   (let* ((watched (map ^(watched? %) names))
          (watched (remove nil watched)))
     (format t "to print: ~A~%" watched)
@@ -185,6 +186,7 @@
   (uiop:run-program (list "firefox" (name2url name))))
 
 (defun view (str)
+  "Search for files with `mfind` and play the results with a media player."
   (let* ((res (mfind str))
          (res (map ^(namestring (truename %)) res)))
     (uiop:run-program (list "mpv" (first res)))))
@@ -242,6 +244,7 @@
 
           ;; create commands from the exported functions and variables.
           (replic:functions-to-commands :replic.base)
+          (push  (cons "help" #'replic::help-completion) replic:*args-completions*)
           (replic:functions-to-commands :clwhosconnected)
 
           ;; define completions.
