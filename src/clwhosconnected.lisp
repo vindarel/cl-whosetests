@@ -181,9 +181,11 @@
     (format t "~a~&" res)
     res))
 
-(defun browse (name)
-  "Open name with web browser. Complete with the connected names, not all."
-  (uiop:run-program (list "firefox" (name2url name))))
+(defun browse (name &rest rest)
+  "Open name(s) with a web browser. Complete with the connected names, not all."
+  (let ((names (cons name rest)))
+    (loop for it in names
+         do (uiop:run-program (list "firefox" (name2url it))))))
 
 (defun view (str)
   "Search for files with `mfind` and play the results with a media player."
