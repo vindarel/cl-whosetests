@@ -189,7 +189,8 @@
   "Search for files with `mfind` and play the results with a media player."
   (let* ((res (mfind str))
          (res (map ^(namestring (truename %)) res)))
-    (uiop:run-program (list "mpv" (first res)))))
+    (when res
+      (uiop:run-program (list "mpv" (first res))))))
 
 ;;
 ;; REPL
@@ -255,4 +256,5 @@
 
           ;; start the repl.
           (replic:repl))
+
         (format t "~a~&" (get-all-connected)))))
