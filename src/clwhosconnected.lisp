@@ -9,6 +9,7 @@
            :*watchlist*
            :get-all-connected
            :names
+           :present
            :mfind
            :browse
            :version
@@ -58,6 +59,9 @@
 
 (defun names ()
   (format t "~a~&" (watchlist-names)))
+
+(defun present (it)
+  (format t "~a" (count it (watchlist-names) :test #'equal)))
 
 (defun titles2url (titles)
   "From a list of user names, give back the full url."
