@@ -247,11 +247,11 @@
 
           ;; create commands from the exported functions and variables.
           (replic:functions-to-commands :replic.base)
-          (push  (cons "help" #'replic::help-completion) replic:*args-completions*)
+          (replic.completion:add-completion "help" #'replic::help-completion)
           (replic:functions-to-commands :clwhosconnected)
 
           ;; define completions.
-          (push '("browse" . *all-connected*) replic:*args-completions*)
+          (replic.completion:add-completion "browser" *all-connected*)
 
           ;; complete all other commands with a name.
           (setf replic:*default-command-completion* #'watchlist-names)
