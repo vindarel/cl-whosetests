@@ -111,7 +111,7 @@
   "Print who's connected (who was found with the last `get-all-connected`."
   (let* ((watched (map ^(watched? %) names))
          (watched (remove nil watched)))
-    (format t "to print: ~A~%" watched)
+    ;; (format t "to print: ~A~%" watched)
     (format t "----------~%")
     (map ^(print-name %) watched)
     t))
@@ -122,7 +122,6 @@
   (let ((names (or names (get-all-titles))))
     (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
       (progn
-        (princ "Connected:\n")
         (print-connected connected)
         (map ^(format t "~A\n" %) (titles2url connected))
         (setf *all-connected* connected)
