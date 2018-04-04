@@ -254,10 +254,10 @@
           (replic:functions-to-commands :clwhosconnected)
 
           ;; define completions.
-          (replic.completion:add-completion "browser" *all-connected*)
+          (replic.completion:add-completion "browse" (lambda () *all-connected*))
 
           ;; complete all other commands with a name.
-          (setf replic:*default-command-completion* #'watchlist-names)
+          (setf replic.completion:*default-command-completion* #'watchlist-names)
 
           ;; start the repl.
           (replic:repl))
