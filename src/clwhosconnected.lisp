@@ -245,9 +245,6 @@
 
           (setf replic:*prompt* (cl-ansi-text:green "whosconnected > "))
 
-          ;; Create the completions bindings.
-          (replic:init-completions)
-
           ;; create commands from the exported functions and variables.
           (replic:functions-to-commands :replic.base)
           (replic.completion:add-completion "help" #'replic::help-completion)
