@@ -193,9 +193,11 @@
 (defun view (str)
   "Search for files with `mfind` and play the results with a media player."
   (let* ((res (mfind str))
-         (res (map ^(namestring (truename %)) res)))
+         (res (map ^(namestring (truename %)) res))
+         (playlist "/tmp/whosplaylist"))
     (when res
-      (uiop:run-program (list "mpv" (first res))))))
+      (str:to-file playlist (str:join "\n" res))
+      (uiop:run-program (list "mpv" (str:concat "--playlist=" playlist))))))
 
 ;;
 ;; REPL
