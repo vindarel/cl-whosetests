@@ -31,6 +31,9 @@
 (setq *page-suffix* "?page=")
 
 (defun get-pages (&optional (base-url *base-url*) (suffix *page-suffix*))
+  (when (str:blank? base-url)
+    (format t "Did you forget to initialize ?"))
+  (assert (not (str:blank? base-url)))
   (map ^(str:concat base-url suffix %) '("1" "2" "3" "4" "5" "6" "7")))
 
 
@@ -70,6 +73,7 @@
 
 (defun name2url (name)
   "From a name, return the url."
+  (assert *base-url*)
   (str:concat *base-url* name))
 
 (defvar *connected* nil)
@@ -80,6 +84,7 @@
            :verbose nil))
 
 (defun get-titles (url)
+  (assert (str:starts-with? "http" url))
   (let (request soup names utime)
     (format t "requesting ~A...\n" url)
     (setf request (get-url url))
@@ -118,6 +123,7 @@
     t))
 
 (defun get-all-connected (&optional names)
+  (assert *base-url*)
   (unless lparallel:*kernel*
     (setf lparallel:*kernel* (lparallel:make-kernel 4)))
   (let ((names (or names (get-all-titles))))
