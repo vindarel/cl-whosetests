@@ -14,6 +14,7 @@
            :browse
            :version
            :view
+           :reload
            :main
            ))
 (in-package :clwhosconnected)
@@ -214,6 +215,10 @@
    "
   (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print)))
 
+(defun reload ()
+  (load-init)
+  (format t "loading ~a~&" *watchlist*)
+  (add-data-watchlist))
 
 (defun version ()
   (format t "~a~&" +version+))
