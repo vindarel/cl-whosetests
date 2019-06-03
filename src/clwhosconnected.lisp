@@ -259,9 +259,9 @@
           (setf replic:*prompt* (cl-ansi-text:green "whosconnected > "))
 
           ;; create commands from the exported functions and variables.
-          (replic:functions-to-commands :replic.base)
+          (replic.completion:functions-to-commands :replic.base)
           (replic.completion:add-completion "help" #'replic::help-completion)
-          (replic:functions-to-commands :clwhosconnected)
+          (replic.completion:functions-to-commands :clwhosconnected)
 
           ;; define completions.
           (replic.completion:add-completion "browse" (lambda () *all-connected*))
