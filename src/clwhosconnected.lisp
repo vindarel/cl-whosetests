@@ -126,13 +126,17 @@
   (assert *base-url*)
   (unless lparallel:*kernel*
     (setf lparallel:*kernel* (lparallel:make-kernel 4)))
-  (let ((names (or names (get-all-titles))))
-    (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
-      (progn
-        (print-connected connected)
-        (map ^(format t "~A\n" %) (titles2url connected))
-        (setf *all-connected* connected)
-        connected))))
+  (restart-case
+      (let ((names (or names (get-all-titles))))
+        (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
+          (progn
+            (print-connected connected)
+            (map ^(format t "~A\n" %) (titles2url connected))
+            (setf *all-connected* connected)
+            connected)))
+    (initialize-and-try-again ()
+      (load-init)
+      (get-all-connected))))
 
 (defun get-connected-ones (&optional (watchlist *watchlist*) (url *url*))
   (format t "searching again...\n")
