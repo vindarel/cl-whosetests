@@ -32,9 +32,10 @@
 
 (defun get-pages (&optional (base-url *base-url*) (suffix *page-suffix*))
   (when (str:blank? base-url)
-    (format t "Did you forget to initialize ?"))
+    (format t "Did you forget to initialize ? use (reload)."))
   (assert (not (str:blank? base-url)))
-  (map ^(str:concat base-url suffix %) '("1" "2" "3" "4" "5" "6" "7")))
+  (map ^(str:concat base-url suffix %)
+       (loop for i upto 10 collect (format nil "~a" i))))
 
 
 (defvar *css-selector* "" "CSS selector to find users on the *base-url* domain.")
