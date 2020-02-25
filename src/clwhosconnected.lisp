@@ -6,7 +6,7 @@
   (:export :print-name
            :print-connected
            :watched?
-           :*watchlist*
+           :*tracklist*
            :get-all-connected
            :names
            :present
@@ -46,10 +46,10 @@
 (defparameter *url* ""
   "url from which is started a search. Should be base-url + suffix.")
 
-(defparameter *watchlist* '() "list of people to watch. Add in init.el.")
+(defparameter *tracklist* '() "list of users to track. Add in init.el.")
 
 (defparameter *data-file* (asdf:system-relative-pathname :clwhosconnected  "data.txt")
-  "the file name in which are stored lines of things to watch.")
+  "the file name in which are stored lines of things to track.")
 
 (defparameter *stats* #H())
 
@@ -57,16 +57,17 @@
   "list of connected names. Is set after a search by get-all-connected.")
 
 
-(defun watchlist-names (&optional (watchlist *watchlist*))
+(defun tracklist-names (&optional (tracklist *tracklist*))
   "List items can be a string or a cons cell with an alist of properties."
-  (sort (map ^(if (consp %) (car %) %) watchlist)
+  (format t "tracklist...")
+  (sort (map ^(if (consp %) (car %) %) tracklist)
         #'string<=))
 
 (defun names ()
-  (format t "~a~&" (watchlist-names)))
+  (format t "~a~&" (tracklist-names)))
 
 (defun present (it)
-  (format t "~a" (count it (watchlist-names) :test #'equal)))
+  (format t "~a" (count it (tracklist-names) :test #'equal)))
 
 (defun titles2url (titles)
   "From a list of user names, give back the full url."
@@ -102,10 +103,12 @@
     (setf titles (lparallel:pmap 'list #'get-titles (GET-PAGES)))
     (flatten (concatenate 'list titles))))
 
-(defun watched? (name)
+(defun get-all-last-connections ()
+  ())
+
 (defun tracked? (name)
-  ;; (princ (find name *watchlist* :test 'equal :key ^(if (consp %) (car %) %)))
-  (find name *watchlist* :test 'equal :key ^(if (consp %) (car %) %)))
+  ;; (princ (find name *tracklist* :test 'equal :key ^(if (consp %) (car %) %)))
+  (find name *tracklist* :test 'equal :key ^(if (consp %) (car %) %)))
 
 (defun print-name (str-or-cons &key (stream t))
   (if (consp str-or-cons)
@@ -130,17 +133,17 @@
     (setf lparallel:*kernel* (lparallel:make-kernel 4)))
   ;; It seems good to destroy the kernel afterwards.
   ;; If the next call hangs, do that.
-  (unless *watchlist*
+  (unless *tracklist*
     (load-init))
   (let ((names (or names (get-all-titles))))
-    (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
+    (if-let (connected (intersection names (tracklist-names *tracklist*) :test 'equal))
       (progn
         (print-connected connected)
         (map ^(format t "~A\n" %) (titles2url connected))
         (setf *all-connected* connected)
         connected))))
 
-(defun get-connected-ones (&optional (watchlist *watchlist*) (url *url*))
+(defun get-connected-ones (&optional (tracklist *tracklist*) (url *url*))
   (format t "searching again...\n")
   (let* ((soup (plump:parse (dex:get url)))
          (titles (lquery:$ soup ".title a" (text)))
@@ -149,7 +152,7 @@
                    ;; (format t "found: ~A" titles)
                    (setq *connected* titles)
                    (coerce titles 'list)))
-         (titles (intersection titles watchlist :test 'equal)))
+         (titles (intersection titles tracklist :test 'equal)))
     (format t "Connected:\n")
     (map ^(format t "~A\n" %) (titles2url titles))
     titles))
@@ -173,16 +176,16 @@
   (map ^(str:words %)
        (data-lines)))
 
-(defun build-data-watchlist ()
+(defun build-data-tracklist ()
   (map ^(progn
           (if (= 1 (length %))
               (name-from-url (car %))
               `(,(name-from-url (car %)) . ((:keywords . ,(cdr %))))))
        (data-words)))
 
-(defun add-data-watchlist ()
-  "Add items listed in `*data-file*' into the `*watchlist*'."
-  (setf *watchlist* (append (build-data-watchlist) *watchlist*)))
+(defun add-data-tracklist ()
+  "Add items listed in `*data-file*' into the `*tracklist*'."
+  (setf *tracklist* (append (build-data-tracklist) *tracklist*)))
 
 (defparameter *data-directory* nil
   "The directory containing our files.")
@@ -226,12 +229,12 @@
    (in-package :clwhosconnected)
    "
   (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print))
-  (add-data-watchlist))
+  (add-data-tracklist))
 
 (defun reload ()
   (load-init)
-  (format t "loading ~a~&" *watchlist*)
-  (add-data-watchlist))
+  (format t "loading ~a~&" *tracklist*)
+  (add-data-tracklist))
 
 (defun version ()
   (format t "~a~&" +version+))
@@ -274,7 +277,7 @@
           (replic.completion:add-completion "browse" (lambda () *all-connected*))
 
           ;; complete all other commands with a name.
-          (setf replic.completion:*default-command-completion* #'watchlist-names)
+          (setf replic.completion:*default-command-completion* #'tracklist-names)
 
           ;; start the repl.
           (replic:repl))
