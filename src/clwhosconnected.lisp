@@ -103,6 +103,7 @@
     (flatten (concatenate 'list titles))))
 
 (defun watched? (name)
+(defun tracked? (name)
   ;; (princ (find name *watchlist* :test 'equal :key ^(if (consp %) (car %) %)))
   (find name *watchlist* :test 'equal :key ^(if (consp %) (car %) %)))
 
@@ -116,10 +117,10 @@
 
 (defun print-connected (names)
   "Print who's connected (who was found with the last `get-all-connected`."
-  (let* ((watched (map ^(watched? %) names))
+  (let* ((watched (map ^(tracked? %) names))
          (watched (remove nil watched)))
     ;; (format t "to print: ~A~%" watched)
-    (format t "----------~%")
+    (format t "~&----------~%")
     (map ^(print-name %) watched)
     t))
 
@@ -127,17 +128,17 @@
   (assert *base-url*)
   (unless lparallel:*kernel*
     (setf lparallel:*kernel* (lparallel:make-kernel 4)))
-  (restart-case
-      (let ((names (or names (get-all-titles))))
-        (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
-          (progn
-            (print-connected connected)
-            (map ^(format t "~A\n" %) (titles2url connected))
-            (setf *all-connected* connected)
-            connected)))
-    (initialize-and-try-again ()
-      (load-init)
-      (get-all-connected))))
+  ;; It seems good to destroy the kernel afterwards.
+  ;; If the next call hangs, do that.
+  (unless *watchlist*
+    (load-init))
+  (let ((names (or names (get-all-titles))))
+    (if-let (connected (intersection names (watchlist-names *watchlist*) :test 'equal))
+      (progn
+        (print-connected connected)
+        (map ^(format t "~A\n" %) (titles2url connected))
+        (setf *all-connected* connected)
+        connected))))
 
 (defun get-connected-ones (&optional (watchlist *watchlist*) (url *url*))
   (format t "searching again...\n")
@@ -224,7 +225,8 @@
    It must start with
    (in-package :clwhosconnected)
    "
-  (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print)))
+  (format t "loading ~a: ~a~&" *init* (load *init* :verbose verbose :print print))
+  (add-data-watchlist))
 
 (defun reload ()
   (load-init)
@@ -240,10 +242,9 @@
 (defun handle-parser-error (c)
   (format t "cli args parser error: ~a~&" (opts:option c)))
 
-(defun main ()
+(defun main (&key interactive)
   (setf lparallel:*kernel* (lparallel:make-kernel 4))
   (load-init)
-  (add-data-watchlist)
 
 
   (opts:define-opts
@@ -256,7 +257,8 @@
       (handler-bind ((error #'handle-parser-error))
         (opts:get-opts))
 
-    (if (getf options :interactive)
+    (if (or (getf options :interactive)
+            interactive)
         (progn
 
           ;; Build our repl commands, help and repl goodies with replic.
