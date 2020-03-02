@@ -16,6 +16,7 @@
            :view
            :reload
            :main
+           :*browser*
            ))
 (in-package :clwhosconnected)
 (annot:enable-annot-syntax)
@@ -23,6 +24,8 @@
 (defconstant +version+ 0.3)
 
 (defparameter *user-agent* "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3 Safari/600.3.18")
+
+(defparameter *browser* "firefox")
 
 (defparameter *base-url* ""
   "Valid base url.")
@@ -204,7 +207,7 @@
   "Open name(s) with a web browser. Complete with the connected names, not all."
   (let ((names (cons name rest)))
     (loop for it in names
-         do (uiop:run-program (list "firefox" (name2url it))))))
+         do (uiop:run-program (list *browser* (name2url it))))))
 
 (defun view (str)
   "Search for files with `mfind` and play the results with a media player."
