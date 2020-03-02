@@ -273,6 +273,10 @@
           (replic.completion:add-completion "help" #'replic::help-completion)
           (replic.completion:functions-to-commands :clwhosconnected)
 
+          ;; read replic's config files and read the "clwhosconnected" section.
+          ;; and only that section, not the default one, at the moment.
+          (replic.config:apply-config :clwhosconnected)
+
           ;; define completions.
           (replic.completion:add-completion "browse" (lambda () *all-connected*))
 
