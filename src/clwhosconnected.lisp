@@ -132,10 +132,10 @@
 
 (defun get-all-connected (&optional names)
   (assert *base-url*)
-  (unless lparallel:*kernel*
-    (setf lparallel:*kernel* (lparallel:make-kernel 4)))
-  ;; It seems good to destroy the kernel afterwards.
-  ;; If the next call hangs, do that.
+  ;; Sometimes, after a C-z or hibernation,
+  ;; if we don't recreate the kernel, netwwork requests can hang.
+  (setf lparallel:*kernel* nil)
+  (setf lparallel:*kernel* (lparallel:make-kernel 4))
   (unless *tracklist*
     (load-init))
   (let ((names (or names (get-all-titles))))
@@ -249,7 +249,7 @@
   (format t "cli args parser error: ~a~&" (opts:option c)))
 
 (defun main (&key interactive)
-  (setf lparallel:*kernel* (lparallel:make-kernel 4))
+  ;; (setf lparallel:*kernel* (lparallel:make-kernel 4))
   (load-init)
 
 
